@@ -1,0 +1,38 @@
+# MATLAB Remote Development .gitignore
+
+# VSCode
+.vscode/settings.json
+.vscode/remote-config.json
+
+# MATLAB temporary files
+*.asv
+*.m~
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary data files (uncomment if you want to ignore)
+*.mat
+*.png
+*.fig
+*.sh
+*.csv
+*.dat
+
+# Trash
+trash
+log
+
+# Large data files (add specific patterns as needed)
+# large_dataset_*.mat
+# big_data_*.csv
