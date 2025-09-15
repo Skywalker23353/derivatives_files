@@ -5,7 +5,7 @@
 clear; clc;
 % close all;
 addpath('~/MATLAB');
-addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/functions');
+addpath(fullfile(pwd, 'functions'));
 
 %% User Input - Work Directory
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files';
@@ -14,10 +14,12 @@ work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_file
 data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800';
 
 D = 2e-3;  % Diameter scale
-save_results_flag = true;
+save_results_flag = false;
 generate_plots_flag = false;
-threshold_and_smooth_results_flag = true;
+threshold_and_smooth_results_flag = false;
 smth_window = 3;
+plot_surface_figures_flag = true;  % Toggle for plotting surface figures
+save_surface_figures_flag = false;  % Toggle for saving surface figures
 
 %% Load coordinate data (C_MAT and Z_MAT)
 fprintf('Loading coordinate data from CZ_data.mat...\n');
@@ -34,7 +36,14 @@ end
 
 % Create output directories
 sensitivities_dir = fullfile(work_dir, 'species_sensitivities');
+
 figures_dir = fullfile(work_dir, 'species_figures');
+surface_figures_dir = fullfile(work_dir, 'surface_figures');
+
+if ~exist(surface_figures_dir, 'dir')
+    mkdir(surface_figures_dir);
+    fprintf('Created surface figures directory: %s\n', surface_figures_dir);
+end
 
 if ~exist(sensitivities_dir, 'dir')
     mkdir(sensitivities_dir);
@@ -231,14 +240,10 @@ if ~isempty(successful_species)
     for i = 1:length(successful_species)
         species_name = successful_species{i};
         species_result = results.(species_name);
-        
+
         if generate_plots_flag
             fprintf('\nGenerating plots for %s...\n', species_name);
-        
-            % Type 1 plots: Individual derivative analysis (3 subplots each)
             generate_type1_plots(species_result, species_name, successful_fields, D, figures_dir);
-            
-            % Type 2 plot: All field derivatives for this species (6 subplots)
             generate_type2_plot(species_result, species_name, successful_fields, D, figures_dir);
         else
             fprintf("Figures flag set to false");
@@ -248,13 +253,63 @@ if ~isempty(successful_species)
         if save_results_flag
             save_species_results(species_result, species_name, successful_fields, sensitivities_dir);
         end
+
+        % Plot and/or save individual surface figures based on flags
+        if plot_surface_figures_flag || save_surface_figures_flag
+            save_individual_surface_figures(species_result, species_name, successful_fields, D, surface_figures_dir, plot_surface_figures_flag, save_surface_figures_flag);
+        end
     end
-    
 else
-    fprintf('\n No species were successfully processed.\n');
+    fprintf('\n No species were successfully processed. \n');
+end
+fprintf('\n=== Processing Complete ===\n');
+%% Function Definitions
+
+function save_individual_surface_figures(species_result, species_name, successful_fields, D, surface_figures_dir, plot_surface_figures_flag, save_surface_figures_flag)
+    % 4 figures for species derivatives
+    fig_num_base = 3000;
+    fig_handle = fig_num_base;
+    if plot_surface_figures_flag
+        plot_surf_custom(fig_handle, species_result.C_MAT, species_result.Z_MAT/D, species_result.species_derivative, ...
+            '$c$', '$z/D$', 'Species Derivative', sprintf('%s Species Derivative', species_name));
+    end
+    if save_surface_figures_flag
+        saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_species_derivative_%s.png', species_name)));
+        saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_species_derivative_%s.fig', species_name)));
+    end
+
+    % 6 figures for field derivatives
+    field_names = fieldnames(species_result.field_derivatives);
+    for i = 1:length(field_names)
+        field_name = field_names{i};
+        field_result = species_result.field_derivatives.(field_name);
+        fig_handle = fig_num_base + i;
+        if plot_surface_figures_flag
+            plot_surf_custom(fig_handle, species_result.C_MAT, species_result.Z_MAT/D, field_result.field_derivative, ...
+                '$c$', '$z/D$', 'Field Derivative', sprintf('%s Field Derivative (%s)', species_name, field_name));
+        end
+        if save_surface_figures_flag
+            saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_field_derivative_%s_%s.png', species_name, field_name)));
+            saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_field_derivative_%s_%s.fig', species_name, field_name)));
+        end
+    end
+
+    % 24 figures for final derivatives
+    for i = 1:length(field_names)
+        field_name = field_names{i};
+        field_result = species_result.field_derivatives.(field_name);
+        fig_handle = fig_num_base + 100 + i;
+        if plot_surface_figures_flag
+            plot_surf_custom(fig_handle, species_result.C_MAT, species_result.Z_MAT/D, field_result.final_derivative, ...
+                '$c$', '$z/D$', 'Final Derivative', sprintf('%s Final Derivative (%s)', species_name, field_name));
+        end
+        if save_surface_figures_flag
+            saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_final_derivative_%s_%s.png', species_name, field_name)));
+            saveas(gcf, fullfile(surface_figures_dir, sprintf('surf_final_derivative_%s_%s.fig', species_name, field_name)));
+        end
+    end
 end
 
-fprintf('\n=== Processing Complete ===\n');
 
 %% Function Definitions
 
@@ -385,6 +440,8 @@ function save_species_results(species_result, species_name, successful_fields, s
         % Create result data structure
         sensitivity_data = struct();
         sensitivity_data.sensitivity = field_result.final_derivative;
+        sensitivity_data.species_derivative = species_result.species_derivative;
+        sensitivity_data.field_derivative = field_result.field_derivative;
         sensitivity_data.species_name = species_name;
         sensitivity_data.field_name = field_name;
         sensitivity_data.species_latex = species_result.latex_label;
