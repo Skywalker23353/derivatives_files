@@ -11,7 +11,7 @@ function save_species_results(species_struct, fields_struct, sensitivities_dir)
             dfield_name = ['d', species_name, '_d', field_data.short_name];
             if isfield(species_data.derivative_wrt_fields, dfield_name)
                 sensitivity_data = struct();
-                sensitivity_data.dspecies_dfield = species_data.derivative_wrt_fields.(dfield_name);
+                sensitivity_data.sensitivity = species_data.derivative_wrt_fields.(dfield_name);
                 sensitivity_data.species_name = species_name;
                 sensitivity_data.field_name = field_name;
                 sensitivity_data.species_latex = species_data.latex_name;

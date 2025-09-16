@@ -325,47 +325,47 @@ fprintf('\n=== Generating Visualization Plots ===\n');
 
 % Define sensitivity labels for regular sensitivities
 sensitivity_labels = struct();
-sensitivity_labels.Temperature = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial T}$';
-sensitivity_labels.density = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial \rho}$';
-sensitivity_labels.CH4 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH4}}$';
-sensitivity_labels.O2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O2}}$';
-sensitivity_labels.CO2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO2}}$';
-sensitivity_labels.H2O = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2O}}$';
-sensitivity_labels.N2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{N2}}$';
+sensitivity_labels.Temperature = '$\frac{\partial  \dot{\omega}_{T}}{\partial T}$';
+sensitivity_labels.density = '$\frac{\partial  \dot{\omega}_{T}}{\partial \rho}$';
+sensitivity_labels.CH4 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CH4}}$';
+sensitivity_labels.O2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{O2}}$';
+sensitivity_labels.CO2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CO2}}$';
+sensitivity_labels.H2O = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{H2O}}$';
+sensitivity_labels.N2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{N2}}$';
 
 % Define labels for chemical source sensitivities
 chem_src_labels = struct();
 % CH4 derivatives
-chem_src_labels.dCH4_dT = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial T}$';
-chem_src_labels.dCH4_drho = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial \rho}$';
-chem_src_labels.dCH4_dCH4 = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial Y_{CH4}}$';
-chem_src_labels.dCH4_dO2 = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial Y_{O2}}$';
-chem_src_labels.dCH4_dCO2 = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial Y_{CO2}}$';
-chem_src_labels.dCH4_dH2O = '$\frac{\partial \langle \dot{\omega}_{CH_4}|c\rangle}{\partial Y_{H2O}}$';
+chem_src_labels.dCH4_dT = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial T}$';
+chem_src_labels.dCH4_drho = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial \rho}$';
+chem_src_labels.dCH4_dCH4 = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial Y_{CH4}}$';
+chem_src_labels.dCH4_dO2 = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial Y_{O2}}$';
+chem_src_labels.dCH4_dCO2 = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial Y_{CO2}}$';
+chem_src_labels.dCH4_dH2O = '$\frac{\partial  \dot{\omega}_{CH_4}}{\partial Y_{H2O}}$';
 
 % O2 derivatives
-chem_src_labels.dO2_dT = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial T}$';
-chem_src_labels.dO2_drho = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial \rho}$';
-chem_src_labels.dO2_dCH4 = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial Y_{CH4}}$';
-chem_src_labels.dO2_dO2 = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial Y_{O2}}$';
-chem_src_labels.dO2_dCO2 = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial Y_{CO2}}$';
-chem_src_labels.dO2_dH2O = '$\frac{\partial \langle \dot{\omega}_{O_2}|c\rangle}{\partial Y_{H2O}}$';
+chem_src_labels.dO2_dT = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial T}$';
+chem_src_labels.dO2_drho = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial \rho}$';
+chem_src_labels.dO2_dCH4 = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial Y_{CH4}}$';
+chem_src_labels.dO2_dO2 = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial Y_{O2}}$';
+chem_src_labels.dO2_dCO2 = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial Y_{CO2}}$';
+chem_src_labels.dO2_dH2O = '$\frac{\partial  \dot{\omega}_{O_2}}{\partial Y_{H2O}}$';
 
 % CO2 derivatives
-chem_src_labels.dCO2_dT = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial T}$';
-chem_src_labels.dCO2_drho = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial \rho}$';
-chem_src_labels.dCO2_dCH4 = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial Y_{CH4}}$';
-chem_src_labels.dCO2_dO2 = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial Y_{O2}}$';
-chem_src_labels.dCO2_dCO2 = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial Y_{CO2}}$';
-chem_src_labels.dCO2_dH2O = '$\frac{\partial \langle \dot{\omega}_{CO_2}|c\rangle}{\partial Y_{H2O}}$';
+chem_src_labels.dCO2_dT = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial T}$';
+chem_src_labels.dCO2_drho = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial \rho}$';
+chem_src_labels.dCO2_dCH4 = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial Y_{CH4}}$';
+chem_src_labels.dCO2_dO2 = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial Y_{O2}}$';
+chem_src_labels.dCO2_dCO2 = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial Y_{CO2}}$';
+chem_src_labels.dCO2_dH2O = '$\frac{\partial  \dot{\omega}_{CO_2}}{\partial Y_{H2O}}$';
 
 % H2O derivatives
-chem_src_labels.dH2O_dT = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial T}$';
-chem_src_labels.dH2O_drho = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial \rho}$';
-chem_src_labels.dH2O_dCH4 = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial Y_{CH4}}$';
-chem_src_labels.dH2O_dO2 = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial Y_{O2}}$';
-chem_src_labels.dH2O_dCO2 = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial Y_{CO2}}$';
-chem_src_labels.dH2O_dH2O = '$\frac{\partial \langle \dot{\omega}_{H_2O}|c\rangle}{\partial Y_{H2O}}$';
+chem_src_labels.dH2O_dT = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial T}$';
+chem_src_labels.dH2O_drho = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial \rho}$';
+chem_src_labels.dH2O_dCH4 = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial Y_{CH4}}$';
+chem_src_labels.dH2O_dO2 = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial Y_{O2}}$';
+chem_src_labels.dH2O_dCO2 = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial Y_{CO2}}$';
+chem_src_labels.dH2O_dH2O = '$\frac{\partial  \dot{\omega}_{H_2O}}{\partial Y_{H2O}}$';
 
 % Generate plots for regular sensitivities
 fprintf('Generating plots for regular sensitivities...\n');
@@ -377,12 +377,12 @@ for i = 1:length(summary_info.regular_sensitivity_fields)
     if isfield(sensitivity_labels, field_name)
         label = sensitivity_labels.(field_name);
     else
-        label = sprintf('$\\frac{\\partial \\langle \\dot{\\omega}_{T}|c\\rangle}{\\partial %s}$', strrep(field_name, '_', '\\_'));
+        label = sprintf('$\\frac{\\partial \ \\dot{\\omega}_{T}\}{\\partial %s}$', strrep(field_name, '_', '\\_'));
     end
     
     fprintf('Creating plots for regular sensitivity %s (Figure %d)...\n', field_name, figidx);
     try
-        plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
+%         plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
         fprintf('  ? Plots saved for regular sensitivity %s\n', field_name);
     catch ME
         fprintf('  ? Error creating plots for regular sensitivity %s: %s\n', field_name, ME.message);
@@ -400,12 +400,12 @@ for i = 1:length(summary_info.chem_src_sensitivity_fields)
         label = chem_src_labels.(field_name);
     else
         % Generic label for any missed chemical source sensitivity
-        label = sprintf('$\\frac{\\partial \\langle \\dot{\\omega}_{species}|c\\rangle}{\\partial field}$ (%s)', strrep(field_name, '_', '\\_'));
+        label = sprintf('$\\frac{\\partial \ \\dot{\\omega}_{species}\}{\\partial field}$ (%s)', strrep(field_name, '_', '\\_'));
     end
     
     fprintf('Creating plots for chemical source sensitivity %s (Figure %d)...\n', field_name, figidx);
     try
-        plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
+%         plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
         fprintf('  ? Plots saved for chemical source sensitivity %s\n', field_name);
     catch ME
         fprintf('  ? Error creating plots for chemical source sensitivity %s: %s\n', field_name, ME.message);

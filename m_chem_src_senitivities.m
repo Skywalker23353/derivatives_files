@@ -3,7 +3,7 @@
 % where numerator is species reaction rate and denominator is various fields
 
 clear; clc;
-% close all;
+close all;
 addpath('~/MATLAB');
 addpath(fullfile(pwd, 'functions'));
 
@@ -14,12 +14,12 @@ work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_file
 data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800';
 
 D = 2e-3;  % Diameter scale
-save_results_flag = false;
+save_results_flag = true;
 generate_plots_flag = false;
-threshold_and_smooth_results_flag = false;
+threshold_and_smooth_results_flag = true;
 smth_window = 3;
 plot_surface_figures_flag = true;  % Toggle for plotting surface figures
-save_surface_figures_flag = false;  % Toggle for saving surface figures
+save_surface_figures_flag = true;  % Toggle for saving surface figures
 
 %% Load coordinate data (C_MAT and Z_MAT)
 [C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
@@ -69,7 +69,9 @@ species_struct = compute_sensitivities(species_struct, fields_struct, successful
 if ~isempty(successful_species)
     fprintf('\n=== Generating Plots and Saving Results ===\n');
     fprintf('Successfully processed %d species: %s\n', length(successful_species), strjoin(successful_species, ', '));
-    
+    if plot_surface_figures_flag || save_surface_figures_flag
+        plot_and_save_individual_field_surface_figures(fields_struct,D, surface_figures_dir, plot_surface_figures_flag, save_surface_figures_flag)
+    end    
     % Generate plots for each species
     for i = 1:length(successful_species)
         species_name = successful_species{i};
@@ -83,16 +85,15 @@ if ~isempty(successful_species)
             fprintf("Figures flag set to false");
         end
 
-        % Save results
+        % Plot and/or save individual surface figures based on flags
+        if plot_surface_figures_flag || save_surface_figures_flag
+            save_individual_surface_figures(species_struct, fields_struct, species_name, successful_fields, D, surface_figures_dir, plot_surface_figures_flag, save_surface_figures_flag,i);
+        end
+    end
+     % Save results
         if save_results_flag
             save_species_results(species_struct, fields_struct, sensitivities_dir);
         end
-
-        % Plot and/or save individual surface figures based on flags
-        if plot_surface_figures_flag || save_surface_figures_flag
-            save_individual_surface_figures(species_struct, fields_struct, species_name, successful_fields, D, surface_figures_dir, plot_surface_figures_flag, save_surface_figures_flag);
-        end
-    end
 else
     fprintf('\n No species were successfully processed. \n');
 end
