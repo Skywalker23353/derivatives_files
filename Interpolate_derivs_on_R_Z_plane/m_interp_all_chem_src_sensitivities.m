@@ -8,7 +8,8 @@ deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_fil
 species_deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/species_sensitivities';
 %% Configuration
 % parameters
-write_to_h5_file_flag = true;
+write_to_h5_file_flag = false;
+save_results_flag = false;
 h5filename = 'Reactants';
 h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/src_sensitivities';
 D = 2e-3;
@@ -272,16 +273,17 @@ if ~exist(plots_dir, 'dir')
     mkdir(plots_dir);
     fprintf('Created plots directory: %s\n', plots_dir);
 end
-
-% Save combustor sensitivities
-comb_output_file = fullfile(output_dir, 'combustor_interpolated_sensitivities.mat');
-save(comb_output_file, '-struct', 'comb_sensitivities');
-fprintf('? Saved combustor sensitivities to: %s\n', comb_output_file);
-
-% Save nozzle sensitivities
-noz_output_file = fullfile(output_dir, 'nozzle_sensitivities.mat');
-save(noz_output_file, '-struct', 'noz_sensitivities');
-fprintf('? Saved nozzle sensitivities to: %s\n', noz_output_file);
+if save_results_flag
+    % Save combustor sensitivities
+    comb_output_file = fullfile(output_dir, 'combustor_interpolated_sensitivities.mat');
+    save(comb_output_file, '-struct', 'comb_sensitivities');
+    fprintf('? Saved combustor sensitivities to: %s\n', comb_output_file);
+    
+    % Save nozzle sensitivities
+    noz_output_file = fullfile(output_dir, 'nozzle_sensitivities.mat');
+    save(noz_output_file, '-struct', 'noz_sensitivities');
+    fprintf('? Saved nozzle sensitivities to: %s\n', noz_output_file);
+end
 
 % Save a summary info file
 summary_info = struct();
@@ -382,7 +384,7 @@ for i = 1:length(summary_info.regular_sensitivity_fields)
     
     fprintf('Creating plots for regular sensitivity %s (Figure %d)...\n', field_name, figidx);
     try
-%         plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
+        plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
         fprintf('  ? Plots saved for regular sensitivity %s\n', field_name);
     catch ME
         fprintf('  ? Error creating plots for regular sensitivity %s: %s\n', field_name, ME.message);
@@ -405,7 +407,7 @@ for i = 1:length(summary_info.chem_src_sensitivity_fields)
     
     fprintf('Creating plots for chemical source sensitivity %s (Figure %d)...\n', field_name, figidx);
     try
-%         plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
+        plot_sensitivity_comparison(comb_sensitivities, noz_sensitivities, field_name, label, plots_dir, figidx);
         fprintf('  ? Plots saved for chemical source sensitivity %s\n', field_name);
     catch ME
         fprintf('  ? Error creating plots for chemical source sensitivity %s: %s\n', field_name, ME.message);

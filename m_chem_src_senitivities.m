@@ -14,13 +14,14 @@ work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_file
 data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800';
 
 D = 2e-3;  % Diameter scale
-save_results_flag = true;
+save_results_flag = false;
 generate_plots_flag = false;
 threshold_and_smooth_results_flag = true;
 smth_window = 3;
 plot_surface_figures_flag = true;  % Toggle for plotting surface figures
-save_surface_figures_flag = true;  % Toggle for saving surface figures
-
+save_surface_figures_flag = false;  % Toggle for saving surface figures
+save_fields_structure_flag = false;
+save_species_structure_flag = false;
 %% Load coordinate data (C_MAT and Z_MAT)
 [C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
 
@@ -97,4 +98,11 @@ if ~isempty(successful_species)
 else
     fprintf('\n No species were successfully processed. \n');
 end
+if save_species_structure_flag
+    save(sprintf('%s/species_structure.mat',sensitivities_dir),"species_struct");
+end
+if save_fields_structure_flag
+    save(sprintf('%s/fields_structure.mat',sensitivities_dir),"fields_struct");
+end
+
 fprintf('\n=== Processing Complete ===\n');

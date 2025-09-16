@@ -35,8 +35,8 @@ function plot_sensitivity_comparison(comb_data, noz_data, field_name, label, out
             if ~exist(output_dir, 'dir')
                 mkdir(output_dir);
             end
-            saveas(gcf, fullfile(output_dir, sprintf('%s_sensitivity_combined.png', field_name)));
-            saveas(gcf, fullfile(output_dir, sprintf('%s_sensitivity_combined.fig', field_name)));
+%             saveas(gcf, fullfile(output_dir, sprintf('%s_sensitivity_combined.png', field_name)));
+%             saveas(gcf, fullfile(output_dir, sprintf('%s_sensitivity_combined.fig', field_name)));
         end
         
 end
