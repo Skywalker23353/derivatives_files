@@ -1,8 +1,10 @@
 function write_field_to_h5_file(fieldNames,N_fields,comb,noz,outdir,filename)
 
-    h5_filename = sprintf('%s/%s_0.h5',outdir,filename);
-    h5_grids_filename = sprintf('%s/%s_grids_0.h5',outdir,filename);
-    phase_name = filename;
+    h5_filename = sprintf('%s/%s.h5',outdir,filename);
+    fname = split(filename,'_');
+    h5_grids_filename = sprintf('%s/%s_grids_0.h5',outdir,fname{1});
+    if isfile(h5_grids_filename); delete(h5_grids_filename);end
+    phase_name = fname{1};
     grid_name1 = 'Combustor';
     grid_name2 = 'Nozzle';
     
@@ -20,8 +22,9 @@ function write_field_to_h5_file(fieldNames,N_fields,comb,noz,outdir,filename)
         noz_field = cat(2,noz_field_lh(:,1:end-1),noz_field_rh);
     
         %% % Increasing the radial size of nozzle domain back to original
+        lip_idx = find(comb.R1(1,:) >= 0.001,1);
+        comb.R1(:,(lip_idx-1)) = comb.R1(:,(lip_idx-1)) + 3e-06;
         noz.R2(:,end) = noz.R2(:,end) + 3e-06;
-        noz.R2(:,1) = noz.R2(:,1) - 3e-06;
         %% Creating 3D domain 
         comb_R_lh = -flip(comb.R1,2);
         comb_bilat = cat(2,comb_R_lh(:,1:end-1),comb.R1);

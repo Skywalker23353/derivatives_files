@@ -4,18 +4,19 @@ addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_deriv
 
 %% Configuration
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_derivs_on_R_Z_plane';
-deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/sensitivities';
+deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/sensitivities_10D';
 
 % parameters
 write_to_h5_file_flag = false;
-h5filename = 'Reactants';
-h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/sensitivities';
+h5filename = 'Reactants_1';
+h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/sensitivities/10D';
 D = 2e-3;
 window = 3; % Window size for nozzle data smoothening (adjust as needed)
 rmx = 5;
-zmx=8.5;
+zmx = 10;
 Yu = 0.222606; %Yb = 0.0423208;
-Yb = 0.0399;
+Yb = 0.041;
+Min_c_limit = 1e-3;Max_c_limit = 1;
 load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
 l_ref = 2e-3;
 U_ref = 65;
@@ -32,7 +33,7 @@ sensitivity_fields = {
     'sensitivity_O2';
     'sensitivity_CO2';
     'sensitivity_H2O';
-    'sensitivity_N2';
+%     'sensitivity_N2';
 };
 
 %% Step 1-4: Load grids and setup (done once)
@@ -53,13 +54,13 @@ load('structured_grid_from_LES_grid_with_zero_16_unilat_planes.mat');
 
 % Create C field using YO2 field
 fprintf('Computing C fields...\n');
-comb_data.C_field_MAT = (Yu - comb_data.O2_fmean)/(Yu - Yb);
-noz_data.C_field_MAT = (Yu - noz_data.O2_fmean)/(Yu - Yb);
+comb_data.C_field_MAT = (Yu - comb_data.O2_mean)/(Yu - Yb);
+noz_data.C_field_MAT = (Yu - noz_data.O2_mean)/(Yu - Yb);
 
 % Load reference C_MAT and Z_MAT for sensitivities
 fprintf('Loading reference C and Z matrices...\n');
-load('/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800/Heatrelease_smooth.mat', "C_MAT", "Z_MAT");
-
+load('/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D/CZ_data.mat', "C_MAT", "Z_MAT");
+% [C_MAT, Z_MAT] = get_CZ_coord_data(deriv_dir);
 % Apply Z restriction logic
 Z_idx_mx = find((Z_MAT)/D >= zmx, 1);
 r_idx_mx = find(R1(1,:)/D >= rmx,1);
@@ -68,8 +69,8 @@ Z1 = Z1(1:Z_idx_mx, 1:r_idx_mx);
 comb_data.C_field_MAT = comb_data.C_field_MAT(1:Z_idx_mx, 1:r_idx_mx);
 
 % Sanity check for C field
-% comb_data.C_field_MAT(find(comb_data.C_field_MAT < 1e-5)) = 0;
-comb_data.C_field_MAT(find(comb_data.C_field_MAT > 1)) = 1;
+comb_data.C_field_MAT(find(comb_data.C_field_MAT < Min_c_limit)) = 0;
+comb_data.C_field_MAT(find(comb_data.C_field_MAT > Max_c_limit)) = 1;
 
 fprintf('Setup complete. Grid size: %dx%d\n', size(Z1, 1), size(Z1, 2));
 
@@ -210,13 +211,13 @@ fprintf('\n=== Generating Visualization Plots ===\n');
 
 % Define sensitivity labels
 sensitivity_labels = struct();
-sensitivity_labels.Temperature = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial T}$';
-sensitivity_labels.density = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial \rho}$';
-sensitivity_labels.CH4 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH4}}$';
-sensitivity_labels.O2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O2}}$';
-sensitivity_labels.CO2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO2}}$';
-sensitivity_labels.H2O = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2O}}$';
-sensitivity_labels.N2 = '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{N2}}$';
+sensitivity_labels.Temperature = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial T}$';
+sensitivity_labels.density = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial \rho}$';
+sensitivity_labels.CH4 = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial Y_{CH4}}$';
+sensitivity_labels.O2 = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial Y_{O2}}$';
+sensitivity_labels.CO2 = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial Y_{CO2}}$';
+sensitivity_labels.H2O = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial Y_{H2O}}$';
+sensitivity_labels.N2 = '$\frac{\partial \langle \dot{\omega}_{T}\rangle}{\partial Y_{N2}}$';
 
 for i = 1:length(summary_info.processed_fields)
     field_name = summary_info.processed_fields{i};
@@ -226,7 +227,7 @@ for i = 1:length(summary_info.processed_fields)
     if isfield(sensitivity_labels, field_name)
         label = sensitivity_labels.(field_name);
     else
-        label = sprintf('$\\frac{\\partial \\langle \\dot{\\omega}_{T}|c\\rangle}{\\partial %s}$', strrep(field_name, '_', '\\_'));
+        label = sprintf('$\\frac{\\partial \\langle \\dot{\\omega}_{T}\\rangle}{\\partial %s}$', strrep(field_name, '_', '\\_'));
     end
     
     fprintf('Creating plots for %s (Figure %d)...\n', field_name, figidx);

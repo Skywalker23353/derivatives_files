@@ -4,21 +4,21 @@ addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_deriv
 
 %% Configuration
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_derivs_on_R_Z_plane';
-deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/sensitivities';
-species_deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/species_sensitivities';
+deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/sensitivities_10D';
+species_deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/species_sensitivities_10D';
 %% Configuration
 % parameters
 write_to_h5_file_flag = false;
 save_results_flag = false;
-h5filename = 'Reactants';
-h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/src_sensitivities';
+h5filename = 'Reactants_1';
+h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/src_sensitivities/10D';
 D = 2e-3;
 window = 3; % Window size for nozzle data smoothening (adjust as needed)
 rmx = 5;
-zmx=8.5;
-Yu = 0.222606; %Yb = 0.0423208;
-Yb = 0.0399;
-load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
+zmx=10;
+Yu = 0.222606;Yb = 0.041;% Yb = 0.0423208;
+Min_c_limit = 1e-3;Max_c_limit = 1.0;
+% Yb = 0.039;
 l_ref = 2e-3;
 U_ref = 65;
 V_ref = l_ref^3;
@@ -29,7 +29,8 @@ variable_ref_val_list = {'density',rho_ref; 'Temperature',T_ref;};
 omega_dot_k_scaling = (rho_ref*U_ref)/l_ref;
 omega_dot_T_scaling = (rho_ref*Cp_ref*T_ref*U_ref)/l_ref;
 Q_bar = 163;
-
+load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
+%%
 % Define all sensitivity fields to process
 sensitivity_fields = {
     'sensitivity_Temperature';
@@ -92,13 +93,12 @@ load('structured_grid_from_LES_grid_with_zero_16_unilat_planes.mat');
 
 % Create C field using YO2 field
 fprintf('Computing C fields...\n');
-comb_data.C_field_MAT = (Yu - comb_data.O2_fmean)/(Yu - Yb);
-noz_data.C_field_MAT = (Yu - noz_data.O2_fmean)/(Yu - Yb);
+comb_data.C_field_MAT = (Yu - comb_data.O2_mean)/(Yu - Yb);
+noz_data.C_field_MAT = (Yu - noz_data.O2_mean)/(Yu - Yb);
 
 % Load reference C_MAT and Z_MAT for sensitivities
 fprintf('Loading reference C and Z matrices...\n');
-load('/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800/Heatrelease_smooth.mat', "C_MAT", "Z_MAT");
-
+load('/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D/CZ_data.mat', "C_MAT", "Z_MAT");
 % Apply Z restriction logic
 Z_idx_mx = find((Z_MAT)/D >= zmx, 1);
 r_idx_mx = find(R1(1,:)/D >= rmx,1);
@@ -107,8 +107,8 @@ Z1 = Z1(1:Z_idx_mx, 1:r_idx_mx);
 comb_data.C_field_MAT = comb_data.C_field_MAT(1:Z_idx_mx, 1:r_idx_mx);
 
 % Sanity check for C field
-% comb_data.C_field_MAT(find(comb_data.C_field_MAT < 1e-5)) = 0;
-comb_data.C_field_MAT(find(comb_data.C_field_MAT > 1)) = 1;
+comb_data.C_field_MAT(find(comb_data.C_field_MAT < Min_c_limit)) = 0;
+comb_data.C_field_MAT(find(comb_data.C_field_MAT > Max_c_limit)) = 1;
 
 fprintf('Setup complete. Grid size: %dx%d\n', size(Z1, 1), size(Z1, 2));
 
@@ -169,7 +169,12 @@ for field_idx = 1:length(sensitivity_fields)
         fprintf("Scaling %s\n",field_name);
         
         Interp_deriv_field = model_scaling_factor * Interp_deriv_field  / omega_dot_T_scaling; % Scaling
-        
+        if strcmp(clean_field_name,'Temperature')
+            Interp_deriv_field = Interp_deriv_field.*T_ref;
+        elseif strcmp(clean_field_name,'density')
+            Interp_deriv_field = Interp_deriv_field.*rho_ref;
+        end
+        clean_field_name = sprintf('dw_T_d%s',clean_field_name);
         comb_sensitivities.(clean_field_name) = Interp_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)
@@ -232,6 +237,13 @@ for field_idx = 1:length(chem_src_sensitivity_fields)
         % Apply same scaling as other sensitivities - no special scaling for species derivatives
         fprintf("Scaling chemical source sensitivity %s\n", field_name);
         Interp_chem_deriv_field = model_scaling_factor * Interp_chem_deriv_field / omega_dot_k_scaling;
+        fieldName = split(field_name, '_');
+        fieldName = fieldName{end};
+        if strcmp(fieldName,'dT')
+            Interp_chem_deriv_field = Interp_chem_deriv_field*T_ref;
+        elseif strcmp(field_name,'drho')
+            Interp_chem_deriv_field = Interp_chem_deriv_field*rho_ref;
+        end
         comb_sensitivities.(field_name) = Interp_chem_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)
@@ -307,10 +319,10 @@ chem_src_processed = {};
 for i = 1:length(all_processed_fields)
     field = all_processed_fields{i};
     % Check if it's a chemical source sensitivity (starts with 'd' and contains '_d')
-    if startsWith(field, 'd') && contains(field, '_d')
-        chem_src_processed{end+1} = field;
-    else
+    if startsWith(field, 'dw_T')
         regular_processed{end+1} = field;
+    elseif startsWith(field, 'd') && contains(field, '_d')
+        chem_src_processed{end+1} = field;
     end
 end
 
@@ -327,13 +339,13 @@ fprintf('\n=== Generating Visualization Plots ===\n');
 
 % Define sensitivity labels for regular sensitivities
 sensitivity_labels = struct();
-sensitivity_labels.Temperature = '$\frac{\partial  \dot{\omega}_{T}}{\partial T}$';
-sensitivity_labels.density = '$\frac{\partial  \dot{\omega}_{T}}{\partial \rho}$';
-sensitivity_labels.CH4 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CH4}}$';
-sensitivity_labels.O2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{O2}}$';
-sensitivity_labels.CO2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CO2}}$';
-sensitivity_labels.H2O = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{H2O}}$';
-sensitivity_labels.N2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{N2}}$';
+sensitivity_labels.dw_T_dTemperature = '$\frac{\partial  \dot{\omega}_{T}}{\partial T}$';
+sensitivity_labels.dw_T_ddensity = '$\frac{\partial  \dot{\omega}_{T}}{\partial \rho}$';
+sensitivity_labels.dw_T_dCH4 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CH4}}$';
+sensitivity_labels.dw_T_dO2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{O2}}$';
+sensitivity_labels.dw_T_dCO2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{CO2}}$';
+sensitivity_labels.dw_T_dH2O = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{H2O}}$';
+sensitivity_labels.dw_T_dN2 = '$\frac{\partial  \dot{\omega}_{T}}{\partial Y_{N2}}$';
 
 % Define labels for chemical source sensitivities
 chem_src_labels = struct();
@@ -473,3 +485,5 @@ if write_to_h5_file_flag
     
     fprintf('=== H5 File Writing Complete ===\n');
 end
+%%
+% myutils.plot_field(1,comb_sensitivities.R1,comb_sensitivities.Z1/D,comb_data.C_field_MAT,'$C$');

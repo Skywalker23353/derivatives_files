@@ -5,6 +5,7 @@
 .vscode/remote-config.json
 
 # MATLAB temporary files
+*_temporary.m
 *.asv
 *.m~
 *.tmp

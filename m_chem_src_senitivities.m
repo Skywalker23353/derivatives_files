@@ -11,17 +11,17 @@ addpath(fullfile(pwd, 'functions'));
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files';
 
 %% Configuration
-data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800';
+data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D';
 
 D = 2e-3;  % Diameter scale
-save_results_flag = false;
+save_results_flag = true;
 generate_plots_flag = false;
 threshold_and_smooth_results_flag = true;
 smth_window = 3;
 plot_surface_figures_flag = true;  % Toggle for plotting surface figures
-save_surface_figures_flag = false;  % Toggle for saving surface figures
-save_fields_structure_flag = false;
-save_species_structure_flag = false;
+save_surface_figures_flag = true;  % Toggle for saving surface figures
+save_fields_structure_flag = true;
+save_species_structure_flag = true;
 %% Load coordinate data (C_MAT and Z_MAT)
 [C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
 
@@ -106,3 +106,5 @@ if save_fields_structure_flag
 end
 
 fprintf('\n=== Processing Complete ===\n');
+%%
+% myutils.plot_field(1,species_struct.CH4.C_MAT,species_struct.CH4.Z_MAT/D,species_struct.CH4.derivative_wrt_C,'$\frac{\partial \dot{\omega_{CH_4}}}{\partial c}$');

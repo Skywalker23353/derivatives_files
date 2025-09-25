@@ -11,13 +11,13 @@ addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/functions');
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files';
 
 %% Configuration
-data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800';
+data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D';
 
 D = 2e-3;  % Diameter scale
-save_results_flag = true;
+save_results_flag = false;
 % Create output directories
-sensitivities_dir = fullfile(work_dir, 'sensitivities');
-figures_dir = fullfile(work_dir, 'sensitivities_figures');
+sensitivities_dir = fullfile(work_dir, 'sensitivities_10D');
+figures_dir = fullfile(work_dir, 'sensitivities_figures_10D');
 
 if ~exist(sensitivities_dir, 'dir')
     mkdir(sensitivities_dir);
@@ -34,19 +34,19 @@ field_configs = {
     % {field_name, smooth_suffix, latex_label, plot_title, derivative_label}
     'Temperature', '_smooth', 'T', '$T$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial T}$';
     'density', '_smooth', '\rho', '$\rho$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial \rho}$';
-    'CH2O', '_smooth', 'Y_{CH_2O}', '$Y_{CH2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH2O}}$';
-    'CH3', '_smooth', 'Y_{CH_3}', '$Y_{CH3}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH3}}$';
+%     'CH2O', '_smooth', 'Y_{CH_2O}', '$Y_{CH2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH2O}}$';
+%     'CH3', '_smooth', 'Y_{CH_3}', '$Y_{CH3}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH3}}$';
     'CH4', '_smooth', 'Y_{CH_4}', '$Y_{CH4}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH4}}$';
-    'CO', '_smooth', 'Y_{CO}', '$Y_{CO}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO}}$';
+%     'CO', '_smooth', 'Y_{CO}', '$Y_{CO}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO}}$';
     'CO2', '_smooth', 'Y_{CO_2}', '$Y_{CO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO2}}$';
-    'H', '_smooth', 'Y_{H}', '$Y_{H}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H}}$';
-    'H2', '_smooth', 'Y_{H_2}', '$Y_{H2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2}}$';
+%     'H', '_smooth', 'Y_{H}', '$Y_{H}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H}}$';
+%     'H2', '_smooth', 'Y_{H_2}', '$Y_{H2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2}}$';
     'H2O', '_smooth', 'Y_{H_2O}', '$Y_{H2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2O}}$';
-    'HO2', '_smooth', 'Y_{HO_2}', '$Y_{HO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{HO2}}$';
-    'N2', '_smooth', 'Y_{N_2}', '$Y_{N2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{N2}}$';
-    'O', '_smooth', 'Y_{O}', '$Y_{O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O}}$';
+%     'HO2', '_smooth', 'Y_{HO_2}', '$Y_{HO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{HO2}}$';
+%     'N2', '_smooth', 'Y_{N_2}', '$Y_{N2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{N2}}$';
+%     'O', '_smooth', 'Y_{O}', '$Y_{O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O}}$';
     'O2', '_smooth', 'Y_{O_2}', '$Y_{O2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O2}}$';
-    'OH', '_smooth', 'Y_{OH}', '$Y_{OH}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{OH}}$';
+%     'OH', '_smooth', 'Y_{OH}', '$Y_{OH}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{OH}}$';
 };
 
 %% Load heat release data (numerator for all calculations)
@@ -59,10 +59,10 @@ catch ME
     fprintf('? Error loading heat release data: %s\n', ME.message);
     return;
 end
-
+[C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
 % Compute heat release derivative (numerator for all calculations)
 fprintf('Computing heat release derivative...\n');
-dq_dc = compute_dfdr(heatRelease.DF, heatRelease.C_MAT);
+dq_dc = compute_dfdr(heatRelease.DF, C_MAT);
 
 %% Process each field
 fprintf('\nProcessing %d fields...\n', size(field_configs, 1));
@@ -73,8 +73,8 @@ fieldname = 'hrr';
 results.(fieldname) = struct();
 results.(fieldname).field_data = heatRelease.DF;
 results.(fieldname).field_derivative = dq_dc;
-results.(fieldname).C_MAT = heatRelease.C_MAT;
-results.(fieldname).Z_MAT = heatRelease.Z_MAT;
+results.(fieldname).C_MAT = C_MAT;
+results.(fieldname).Z_MAT = Z_MAT;
 results.(fieldname).latex_label = '\dot{\omega}_{T}';
 results.(fieldname).derivative_label = '\dot{\omega}_{T}';
 
@@ -114,7 +114,7 @@ for i = 1:size(field_configs, 1)
         
         % Compute field derivative
         fprintf('  Computing derivative d%s/dc...\n', field_name);
-        df_dc = compute_dfdr(field_data.DF, heatRelease.C_MAT);
+        df_dc = compute_dfdr(field_data.DF, C_MAT);
         
         % Handle zero values in denominator
         zero_idx = find(abs(df_dc) < 1e-16);
@@ -137,8 +137,8 @@ for i = 1:size(field_configs, 1)
         results.(field_name).field_data = field_data.DF;
         results.(field_name).field_derivative = df_dc;
         results.(field_name).final_derivative = derivative_result;
-        results.(field_name).C_MAT = heatRelease.C_MAT;
-        results.(field_name).Z_MAT = heatRelease.Z_MAT;
+        results.(field_name).C_MAT = C_MAT;
+        results.(field_name).Z_MAT = Z_MAT;
         results.(field_name).latex_label = latex_label;
         results.(field_name).plot_title = plot_title;
         results.(field_name).derivative_label = derivative_label;
@@ -162,7 +162,7 @@ if ~isempty(successful_fields)
     for i = 1:length(successful_fields)
         field_name = successful_fields{i};
         f_name = successful_fields_fig{i};
-        plot_field_results(results.(field_name), results.hrr, f_name, D, i, figures_dir);
+%         plot_field_results(results.(field_name), results.hrr, f_name, D, i, figures_dir,C_MAT,Z_MAT);
     end
     
     % Create summary comparison plot
@@ -210,7 +210,7 @@ function dfield_dc = compute_dfdr(field_data, C_MAT)
     end
 end
 
-function plot_field_results(field_result, heatRelease, field_name, D, figure_offset, figures_dir)
+function plot_field_results(field_result, heatRelease, field_name, D, figure_offset, figures_dir, C_MAT, Z_MAT)
     % Plot original field, its derivative, and final result in a single
     % maximized figure
     
@@ -223,7 +223,7 @@ function plot_field_results(field_result, heatRelease, field_name, D, figure_off
     
     % Subplot 1:heat release derivative
     subplot(1, 4, 1);
-        myutils.plot_contourf(gcf, heatRelease.C_MAT, heatRelease.Z_MAT/D, heatRelease.field_derivative, ...
+        myutils.plot_contourf(gcf, C_MAT, Z_MAT/D, heatRelease.field_derivative, ...
             '$c$', '$z/D$', sprintf('$\\frac{\\partial \\langle %s|c\\rangle}{\\partial c}$', heatRelease.latex_label));
 
     % Subplot 2: Original field

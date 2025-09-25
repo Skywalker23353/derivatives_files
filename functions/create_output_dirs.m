@@ -1,8 +1,8 @@
 function dirs = create_output_dirs(work_dir)
     % Create all output directories and return their paths
-    dirs.sensitivities_dir = fullfile(work_dir, 'species_sensitivities');
-    dirs.figures_dir = fullfile(work_dir, 'species_figures');
-    dirs.surface_figures_dir = fullfile(work_dir, 'surface_figures');
+    dirs.sensitivities_dir = fullfile(work_dir, 'species_sensitivities_10D');
+    dirs.figures_dir = fullfile(work_dir, 'species_sensitivities_figures');
+    dirs.surface_figures_dir = fullfile(work_dir, 'species_sensitivities_surface_figures');
 
     % Create directories if they don't exist
     dir_names = fieldnames(dirs);

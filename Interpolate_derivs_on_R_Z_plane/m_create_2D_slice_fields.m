@@ -5,7 +5,7 @@ addpath("~/MATLAB/");
 addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_derivs_on_R_Z_plane/functions');
 tic
 %% USER INPUTS
-Interp_field_names = {{'O2_fmean'}};
+Interp_field_names = {{'O2_mean'}};
 LES_data_dir = "/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/" + ...
     "filtering_run3/Final_baseflow_with_EBU_components";
 work_dir = pwd;

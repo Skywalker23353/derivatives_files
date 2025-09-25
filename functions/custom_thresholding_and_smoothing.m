@@ -8,14 +8,14 @@ function field_out = custom_thresholding_and_smoothing(field_in, sensitivities_d
 
     % Check file existence
     if ~exist(thld_and_smth_parameters_file, 'file')
-        warning('Thresholding and smoothing parameter file not found: %s', thld_and_smth_parameters_file);
+        warning('ERROR: Thresholding and smoothing parameter file not found: %s', thld_and_smth_parameters_file);
         return;
     end
 
     % Load parameter file
     S = load(thld_and_smth_parameters_file);
     if ~isfield(S, 'data')
-        warning('Parameter file does not contain ''data'' variable.');
+        warning(' ERROR: Parameter file does not contain ''data'' variable.');
         return;
     end
 
