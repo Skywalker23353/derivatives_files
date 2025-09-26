@@ -9,7 +9,7 @@ species_deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivat
 %% Configuration
 % parameters
 write_to_h5_file_flag = false;
-save_results_flag = false;
+save_results_flag = true;
 h5filename = 'Reactants_1';
 h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/src_sensitivities/10D';
 D = 2e-3;
@@ -26,9 +26,8 @@ Cp_ref = 1100;
 rho_ref = 0.4237;
 T_ref = 800;
 variable_ref_val_list = {'density',rho_ref; 'Temperature',T_ref;}; 
-omega_dot_k_scaling = (rho_ref*U_ref)/l_ref;
+omega_dot_k_scaling = 1;
 omega_dot_T_scaling = (rho_ref*Cp_ref*T_ref*U_ref)/l_ref;
-Q_bar = 163;
 load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
 %%
 % Define all sensitivity fields to process
@@ -237,13 +236,13 @@ for field_idx = 1:length(chem_src_sensitivity_fields)
         % Apply same scaling as other sensitivities - no special scaling for species derivatives
         fprintf("Scaling chemical source sensitivity %s\n", field_name);
         Interp_chem_deriv_field = model_scaling_factor * Interp_chem_deriv_field / omega_dot_k_scaling;
-        fieldName = split(field_name, '_');
-        fieldName = fieldName{end};
-        if strcmp(fieldName,'dT')
-            Interp_chem_deriv_field = Interp_chem_deriv_field*T_ref;
-        elseif strcmp(field_name,'drho')
-            Interp_chem_deriv_field = Interp_chem_deriv_field*rho_ref;
-        end
+%         fieldName = split(field_name, '_');
+%         fieldName = fieldName{end};
+%         if strcmp(fieldName,'dT')
+%             Interp_chem_deriv_field = Interp_chem_deriv_field*T_ref;
+%         elseif strcmp(field_name,'drho')
+%             Interp_chem_deriv_field = Interp_chem_deriv_field*rho_ref;
+%         end
         comb_sensitivities.(field_name) = Interp_chem_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)

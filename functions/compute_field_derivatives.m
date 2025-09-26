@@ -1,9 +1,12 @@
-function [fields_struct, successful_fields] = compute_field_derivatives(field_configs, data_dir, C_MAT, Z_MAT)
+function [fields_struct, successful_fields] = compute_field_derivatives(field_configs, data_dir, C_MAT, Z_MAT, variable_ref_val_list )
     % Compute derivatives for all field data (denominators)
     fprintf('Computing field derivatives (denominators)...\n');
     fields_struct = struct();
     successful_fields = {};
-
+    
+    rho_ref = variable_ref_val_list{1,2};
+    T_ref = variable_ref_val_list{2,2};
+    
     for i = 1:size(field_configs, 1)
         field_name = field_configs{i, 1};
         smooth_suffix = field_configs{i, 2};
@@ -35,10 +38,16 @@ function [fields_struct, successful_fields] = compute_field_derivatives(field_co
         try
             % Load field data
             loaded_data = load(field_path);
-
+            field = compute_dfdr(loaded_data.DF, C_MAT);
+            if strcmp(field_name,'Temperature')
+                field = field./T_ref;
+            elseif strcmp(field_name,'density')
+                field = field./rho_ref;
+            end
+            
             % Store field information in fields_struct
             fields_struct.(field_name).actual_data = loaded_data.DF;
-            fields_struct.(field_name).derivative_wrt_C = compute_dfdr(loaded_data.DF, C_MAT);
+            fields_struct.(field_name).derivative_wrt_C = field;
             fields_struct.(field_name).latex_label = latex_label;
             fields_struct.(field_name).plot_title = plot_title;
             fields_struct.(field_name).short_name = short_name;

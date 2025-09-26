@@ -16,12 +16,23 @@ data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_c
 D = 2e-3;  % Diameter scale
 save_results_flag = true;
 generate_plots_flag = false;
-threshold_and_smooth_results_flag = true;
+threshold_and_smooth_results_flag = false;
 smth_window = 3;
-plot_surface_figures_flag = true;  % Toggle for plotting surface figures
-save_surface_figures_flag = true;  % Toggle for saving surface figures
+plot_surface_figures_flag = false;  % Toggle for plotting surface figures
+save_surface_figures_flag = false;  % Toggle for saving surface figures
 save_fields_structure_flag = true;
 save_species_structure_flag = true;
+%% Normalization data
+% Yb = 0.039;
+l_ref = 2e-3;
+U_ref = 65;
+V_ref = l_ref^3;
+Cp_ref = 1100;
+rho_ref = 0.4237;
+T_ref = 800;
+variable_ref_val_list = {'density',rho_ref; 'Temperature',T_ref;}; 
+omega_dot_k_scaling = (rho_ref*U_ref)/l_ref;
+
 %% Load coordinate data (C_MAT and Z_MAT)
 [C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
 
@@ -58,10 +69,10 @@ field_configs = {
 };
 
 %% Load all field data first (denominators)
-[fields_struct, successful_fields] = compute_field_derivatives(field_configs, data_dir, C_MAT, Z_MAT);
+[fields_struct, successful_fields] = compute_field_derivatives(field_configs, data_dir, C_MAT, Z_MAT, variable_ref_val_list );
 
 %% Compute species numerators (derivatives with respect to c)
-[species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT);
+[species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT, omega_dot_k_scaling);
 
 %% Compute final derivatives/sensitivities
 species_struct = compute_sensitivities(species_struct, fields_struct, successful_species, successful_fields, threshold_and_smooth_results_flag, sensitivities_dir, smth_window);

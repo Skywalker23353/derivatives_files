@@ -1,4 +1,4 @@
-function [species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT)
+function [species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT, omega_dot_k_scaling)
     % Compute species numerators (derivatives with respect to c)
     fprintf('\nProcessing %d species (numerators)...\n', size(species_configs, 1));
     species_struct = struct();
@@ -30,7 +30,7 @@ function [species_struct, successful_species] = compute_species_numerators(speci
             fprintf('  Computing derivative d%s/dc...\n', species_name);
             dspecies_dc = compute_dfdr(species_data.DF, C_MAT);
             dspecies_dc = set_boundary_to_zero(dspecies_dc, 'BoundaryWidth', 1, 'Boundaries', {'left','right'});
-
+            dspecies_dc = dspecies_dc./omega_dot_k_scaling;
             % Initialize species_struct with numerator information
             species_struct.(species_name).actual_data = species_data.DF;
             species_struct.(species_name).derivative_wrt_C = dspecies_dc;
