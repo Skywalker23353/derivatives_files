@@ -1,10 +1,11 @@
-function species_struct = compute_sensitivities(species_struct, fields_struct, successful_species, successful_fields, threshold_and_smooth_results_flag, sensitivities_dir, smth_window)
+function species_struct = compute_sensitivities(species_struct, fields_struct, successful_species, successful_fields, threshold_and_smooth_results_flag, sensitivities_dir, smth_window,z_ref)
     % Compute final derivatives/sensitivities: d(species_reaction_rate)/d(field)
     fprintf('\nComputing sensitivities (final derivatives)...\n');
-
+    
     for i = 1:length(successful_species)
         species_name = successful_species{i};
         species_info = species_struct.(species_name);
+        Z_MAT = species_info.Z_MAT;
 
         fprintf('\n--- Computing sensitivities for %s ---\n', species_name);
 
@@ -38,7 +39,8 @@ function species_struct = compute_sensitivities(species_struct, fields_struct, s
                 if threshold_and_smooth_results_flag
                     final_derivative = custom_thresholding_and_smoothing(final_derivative, sensitivities_dir, species_name, field_info.short_name, smth_window);
                 end
-
+                final_derivative = set_sensitivities_bc(final_derivative, Z_MAT, z_ref);
+%                 final_derivative =  apply_smoothing_ignore_boundaries_1(final_derivative,3,{'all'},1);
                 % Store results in species_struct
                 dfield_name = ['d', species_name, '_d', field_info.short_name];
                 species_struct.(species_name).derivative_wrt_fields.(dfield_name) = final_derivative;

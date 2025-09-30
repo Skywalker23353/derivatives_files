@@ -9,15 +9,16 @@ species_deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivat
 %% Configuration
 % parameters
 write_to_h5_file_flag = false;
-save_results_flag = true;
-h5filename = 'Reactants_1';
+save_results_flag = false;
+h5filename = 'Reactants_5';
 h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/src_sensitivities/10D';
 D = 2e-3;
-window = 3; % Window size for nozzle data smoothening (adjust as needed)
+window_def = 3;window_CH4 = 5;% Window size for data smoothening (adjust as needed)
+n_smth_cycles_def = 4;n_smth_cycles_CH4 = 8;
 rmx = 5;
 zmx=10;
 Yu = 0.222606;Yb = 0.041;% Yb = 0.0423208;
-Min_c_limit = 1e-3;Max_c_limit = 1.0;
+Min_c_limit = 1e-3;Max_c_limit = 0.985;
 % Yb = 0.039;
 l_ref = 2e-3;
 U_ref = 65;
@@ -26,7 +27,7 @@ Cp_ref = 1100;
 rho_ref = 0.4237;
 T_ref = 800;
 variable_ref_val_list = {'density',rho_ref; 'Temperature',T_ref;}; 
-omega_dot_k_scaling = 1;
+omega_dot_k_scaling = (rho_ref*U_ref)/l_ref;
 omega_dot_T_scaling = (rho_ref*Cp_ref*T_ref*U_ref)/l_ref;
 load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
 %%
@@ -174,6 +175,11 @@ for field_idx = 1:length(sensitivity_fields)
             Interp_deriv_field = Interp_deriv_field.*rho_ref;
         end
         clean_field_name = sprintf('dw_T_d%s',clean_field_name);
+        %smoothing
+        for i = 1:n_smth_cycles_def
+            Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field, window_def, 'row');
+            Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field, window_def, 'col');
+        end
         comb_sensitivities.(clean_field_name) = Interp_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)
@@ -187,7 +193,7 @@ for field_idx = 1:length(sensitivity_fields)
         nozzle_field(end,:) = Interp_deriv_field(1,1:size(R2,2));
         
         % Apply smoothening to the nozzle field with updated boundary
-        temp_f = myutils.f_return_smooth_field(nozzle_field, window, 'col');
+        temp_f = myutils.f_return_smooth_field(nozzle_field, window_def, 'col');
         noz_sensitivities.(clean_field_name) = temp_f;
         clear Interp_deriv_field temp_f nozzle_field;
         
@@ -236,13 +242,29 @@ for field_idx = 1:length(chem_src_sensitivity_fields)
         % Apply same scaling as other sensitivities - no special scaling for species derivatives
         fprintf("Scaling chemical source sensitivity %s\n", field_name);
         Interp_chem_deriv_field = model_scaling_factor * Interp_chem_deriv_field / omega_dot_k_scaling;
-%         fieldName = split(field_name, '_');
-%         fieldName = fieldName{end};
-%         if strcmp(fieldName,'dT')
-%             Interp_chem_deriv_field = Interp_chem_deriv_field*T_ref;
-%         elseif strcmp(field_name,'drho')
-%             Interp_chem_deriv_field = Interp_chem_deriv_field*rho_ref;
-%         end
+        fieldName = split(field_name, '_');
+        fieldName = fieldName{end};
+        if strcmp(fieldName,'dT')
+            Interp_chem_deriv_field = Interp_chem_deriv_field*T_ref;
+        elseif strcmp(field_name,'drho')
+            Interp_chem_deriv_field = Interp_chem_deriv_field*rho_ref;
+        end
+        % Smoothing 
+        post_field_name = split(field_name,'_');
+        post_field_name = post_field_name{2};
+
+        if strcmp(post_field_name,'dCH4')
+            n_cycles = n_smth_cycles_CH4;
+            window = window_CH4;
+        else
+            n_cycles = n_smth_cycles_def;
+            window = window_def;
+        end
+        for jj = 1:n_cycles
+            Interp_chem_deriv_field = myutils.f_return_smooth_field(Interp_chem_deriv_field, window, 'row');
+            Interp_chem_deriv_field = myutils.f_return_smooth_field(Interp_chem_deriv_field, window, 'col');
+        end
+        
         comb_sensitivities.(field_name) = Interp_chem_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)
@@ -256,7 +278,7 @@ for field_idx = 1:length(chem_src_sensitivity_fields)
         nozzle_chem_field(end,:) = Interp_chem_deriv_field(1,1:size(R2,2));
         
         % Apply smoothening to the nozzle field with updated boundary
-        temp_chem_f = myutils.f_return_smooth_field(nozzle_chem_field, window, 'col');
+        temp_chem_f = myutils.f_return_smooth_field(nozzle_chem_field, window_def, 'col');
         noz_sensitivities.(field_name) = temp_chem_f;
         clear Interp_chem_deriv_field temp_chem_f nozzle_chem_field;
         
@@ -485,4 +507,4 @@ if write_to_h5_file_flag
     fprintf('=== H5 File Writing Complete ===\n');
 end
 %%
-% myutils.plot_field(1,comb_sensitivities.R1,comb_sensitivities.Z1/D,comb_data.C_field_MAT,'$C$');
+myutils.plot_field(1,comb_sensitivities.R1,comb_sensitivities.Z1/D,comb_data.C_field_MAT,'$C$');

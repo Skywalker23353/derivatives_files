@@ -1,4 +1,4 @@
-function [species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT, omega_dot_k_scaling)
+function [species_struct, successful_species] = compute_species_numerators(species_configs, field_configs, data_dir, C_MAT, Z_MAT, omega_dot_k_scaling, z_ref)
     % Compute species numerators (derivatives with respect to c)
     fprintf('\nProcessing %d species (numerators)...\n', size(species_configs, 1));
     species_struct = struct();
@@ -6,7 +6,7 @@ function [species_struct, successful_species] = compute_species_numerators(speci
 
     for i = 1:size(species_configs, 1)
         species_name = species_configs{i, 1};
-        smooth_suffix = field_configs{i, 2};  % Note: using field_configs smooth suffix
+        smooth_suffix = species_configs{i, 2};  % Note: using field_configs smooth suffix
         file_prefix = species_configs{i, 3};
         species_latex = species_configs{i, 4};
 
@@ -31,6 +31,8 @@ function [species_struct, successful_species] = compute_species_numerators(speci
             dspecies_dc = compute_dfdr(species_data.DF, C_MAT);
             dspecies_dc = set_boundary_to_zero(dspecies_dc, 'BoundaryWidth', 1, 'Boundaries', {'left','right'});
             dspecies_dc = dspecies_dc./omega_dot_k_scaling;
+            dspecies_dc = apply_downstream_replacement(dspecies_dc,Z_MAT,z_ref);
+
             % Initialize species_struct with numerator information
             species_struct.(species_name).actual_data = species_data.DF;
             species_struct.(species_name).derivative_wrt_C = dspecies_dc;

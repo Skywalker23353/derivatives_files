@@ -5,7 +5,7 @@ addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_deriv
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/Interpolate_derivs_on_R_Z_plane';
 D = 2e-3;
 global_hrr_mean = 163;
-save_data = 0;
+save_data = 1;
 
 %% Step 1-4: Load grids and setup (done once)
 fprintf('=== Loading Grid Data and Setup ===\n');
@@ -26,15 +26,16 @@ load('structured_grid_from_LES_grid_with_zero_16_unilat_planes.mat');
 % Create C field using YO2 field
 fprintf('Computing C fields...\n');
 Yu = 0.222606; %Yb = 0.0423208;
-Yb = 0.0399;
-comb_data.C_field_MAT = (Yu - comb_data.O2_fmean)/(Yu - Yb);
-noz_data.C_field_MAT = (Yu - noz_data.O2_fmean)/(Yu - Yb);
+Yb = 0.041;
+comb_data.C_field_MAT = (Yu - comb_data.O2_mean)/(Yu - Yb);
+noz_data.C_field_MAT = (Yu - noz_data.O2_mean)/(Yu - Yb);
 
 % Load hrr data
-hrr = load('/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800/Heatrelease_smooth.mat');
-
+data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D_n';
+hrr = load(sprintf('%s/Heatrelease_smooth.mat',data_dir));
+[C_MAT, Z_MAT] = get_CZ_coord_data(data_dir);
 % Apply Z restriction logic
-Z_idx_mx = find((hrr.Z_MAT)/D >= 8.5, 1);
+Z_idx_mx = find((Z_MAT)/D >= 10, 1);
 r_idx_mx = find((R1(1,:))/D >= 5, 1);
 R1 = R1(1:Z_idx_mx, 1:r_idx_mx); 
 Z1 = Z1(1:Z_idx_mx, 1:r_idx_mx);
@@ -73,7 +74,7 @@ for i = 1:size(Z1, 1)
         fprintf('    Processing Z level %d/%d...\n', i, size(Z1, 1));
     end
     Interp_field(i, :) = linear_interp_field(comb_data.C_field_MAT(i, :)', ...
-                                                  hrr.C_MAT(1, :)', ...
+                                                  C_MAT(1, :)', ...
                                                   hrr.DF(i, :)');
 end
 
@@ -106,4 +107,4 @@ hold off;
 %%
 model_scaling_factor = model_factor(global_hrr_mean,comb.hrr_field,comb.R1,comb.Z1);
 comb.model_scaling_factor = model_scaling_factor;
-if save_data;save('comb_interpolted_hrr_field.mat','-struct','comb');end
+if save_data;save('comb_interpolted_hrr_field_10D.mat','-struct','comb');end

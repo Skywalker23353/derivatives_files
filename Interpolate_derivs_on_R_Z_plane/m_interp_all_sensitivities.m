@@ -8,16 +8,16 @@ deriv_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_fil
 
 % parameters
 write_to_h5_file_flag = false;
-h5filename = 'Reactants_1';
+h5filename = 'Reactants_4';
 h5_outdir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/LES_base_case_v6/filtering_run3/sensitivities/10D';
 D = 2e-3;
 window = 3; % Window size for nozzle data smoothening (adjust as needed)
 rmx = 5;
 zmx = 10;
 Yu = 0.222606; %Yb = 0.0423208;
-Yb = 0.041;
-Min_c_limit = 1e-3;Max_c_limit = 1;
-load("comb_interpolted_hrr_field.mat","model_scaling_factor"); %hrr scaling factor
+Yb = 0.0399;
+Min_c_limit = 1e-3;Max_c_limit = 0.98;
+load("comb_interpolted_hrr_field_10D.mat","model_scaling_factor"); %hrr scaling factor
 l_ref = 2e-3;
 U_ref = 65;
 V_ref = l_ref^3;
@@ -136,6 +136,12 @@ for field_idx = 1:length(sensitivity_fields)
             fprintf("Scaling %s\n",field_name);
             Interp_deriv_field = model_scaling_factor * Interp_deriv_field * V_ref / Q_bar;
         end
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'row');
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'col');
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'row');
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'col');
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'row');
+        Interp_deriv_field = myutils.f_return_smooth_field(Interp_deriv_field,3,'col');
         comb_sensitivities.(clean_field_name) = Interp_deriv_field;
         
         %% Step 6-7: Process nozzle grid (set boundary from combustor and smoothen)

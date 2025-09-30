@@ -11,13 +11,14 @@ addpath('~/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files/functions');
 work_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/derivatives_files';
 
 %% Configuration
-data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D';
+data_dir = '/work/home/satyam/satyam_files/CH4_jet_PF/2025_Runs/c_cond_stats/C_cond_fields_800_10D_n';
 
 D = 2e-3;  % Diameter scale
 save_results_flag = false;
+z_ref_CH4 = 8.5*D;z_ref = 8*D;
 % Create output directories
 sensitivities_dir = fullfile(work_dir, 'sensitivities_10D');
-figures_dir = fullfile(work_dir, 'sensitivities_figures_10D');
+figures_dir = fullfile(sensitivities_dir, 'figures');
 
 if ~exist(sensitivities_dir, 'dir')
     mkdir(sensitivities_dir);
@@ -32,22 +33,31 @@ end
 % Define fields to process (heat release is always the numerator)
 field_configs = {
     % {field_name, smooth_suffix, latex_label, plot_title, derivative_label}
-    'Temperature', '_smooth', 'T', '$T$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial T}$';
-    'density', '_smooth', '\rho', '$\rho$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial \rho}$';
+    'Temperature', '_smooth_bc_smooth', 'T', '$T$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial T}$';
+    'density', '_smooth_bc_smooth', '\rho', '$\rho$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial \rho}$';
 %     'CH2O', '_smooth', 'Y_{CH_2O}', '$Y_{CH2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH2O}}$';
 %     'CH3', '_smooth', 'Y_{CH_3}', '$Y_{CH3}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH3}}$';
-    'CH4', '_smooth', 'Y_{CH_4}', '$Y_{CH4}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH4}}$';
+    'CH4', '_smooth_bc_smooth', 'Y_{CH_4}', '$Y_{CH4}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CH4}}$';
 %     'CO', '_smooth', 'Y_{CO}', '$Y_{CO}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO}}$';
-    'CO2', '_smooth', 'Y_{CO_2}', '$Y_{CO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO2}}$';
+    'CO2', '_smooth_bc_smooth', 'Y_{CO_2}', '$Y_{CO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{CO2}}$';
 %     'H', '_smooth', 'Y_{H}', '$Y_{H}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H}}$';
 %     'H2', '_smooth', 'Y_{H_2}', '$Y_{H2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2}}$';
-    'H2O', '_smooth', 'Y_{H_2O}', '$Y_{H2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2O}}$';
+    'H2O', '_smooth_bc_smooth', 'Y_{H_2O}', '$Y_{H2O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{H2O}}$';
 %     'HO2', '_smooth', 'Y_{HO_2}', '$Y_{HO2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{HO2}}$';
 %     'N2', '_smooth', 'Y_{N_2}', '$Y_{N2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{N2}}$';
 %     'O', '_smooth', 'Y_{O}', '$Y_{O}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O}}$';
-    'O2', '_smooth', 'Y_{O_2}', '$Y_{O2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O2}}$';
+    'O2', '_smooth_bc_smooth', 'Y_{O_2}', '$Y_{O2}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{O2}}$';
 %     'OH', '_smooth', 'Y_{OH}', '$Y_{OH}$', '$\frac{\partial \langle \dot{\omega}_{T}|c\rangle}{\partial Y_{OH}}$';
 };
+% field_configs = {
+%     % {field_name, smooth_suffix, latex_label, plot_title, short_name}
+%     'Temperature', '_smooth_bc_smooth', 'T', '$T$', 'T';
+%     'density', '_smooth_bc_smooth', '\rho', '$\rho$', 'rho';
+%     'CH4', '_smooth_bc_smooth', 'Y_{CH_4}', '$Y_{CH4}$', 'CH4';
+%     'O2', '_smooth_bc_smooth', 'Y_{O_2}', '$Y_{O2}$', 'O2';
+%     'CO2', '_smooth_bc_smooth', 'Y_{CO_2}', '$Y_{CO2}$', 'CO2';
+%     'H2O', '_smooth_bc_smooth', 'Y_{H_2O}', '$Y_{H2O}$', 'H2O';
+% };
 
 %% Load heat release data (numerator for all calculations)
 fprintf('Loading heat release data...\n');
@@ -63,6 +73,7 @@ end
 % Compute heat release derivative (numerator for all calculations)
 fprintf('Computing heat release derivative...\n');
 dq_dc = compute_dfdr(heatRelease.DF, C_MAT);
+% dq_dc = apply_downstream_replacement(dq_dc,Z_MAT,z_ref);
 
 %% Process each field
 fprintf('\nProcessing %d fields...\n', size(field_configs, 1));
@@ -115,7 +126,14 @@ for i = 1:size(field_configs, 1)
         % Compute field derivative
         fprintf('  Computing derivative d%s/dc...\n', field_name);
         df_dc = compute_dfdr(field_data.DF, C_MAT);
-        
+        if strcmp(field_name,'CH4')
+            df_dc = apply_downstream_replacement(df_dc,Z_MAT,z_ref_CH4);
+        else
+            df_dc = apply_downstream_replacement(df_dc,Z_MAT,z_ref);
+        end
+        if strcmp(field_name,'CO2')
+                df_dc = set_boundary_to_zero(df_dc, 'Boundaries', {'right'});
+        end
         % Handle zero values in denominator
         zero_idx = find(abs(df_dc) < 1e-16);
         if ~isempty(zero_idx)
@@ -126,12 +144,16 @@ for i = 1:size(field_configs, 1)
         % Compute final derivative: d(heat_release)/d(field)
         fprintf('  Computing final derivative: d(heat_release)/d(%s)...\n', field_name);
         derivative_result = dq_dc ./ df_dc;
-        
-        if strcmp(field_name,'CH4') 
-            derivative_result = thresholding_and_smoothing(derivative_result,5,0.01);
-        elseif strcmp(field_name,'N2')
-            derivative_result = thresholding_and_smoothing(derivative_result,3,0.001);
+        if strcmp(field_name,'CH4')
+            derivative_result = set_sensitivities_bc(derivative_result, Z_MAT, z_ref_CH4);
+        else
+            derivative_result = set_sensitivities_bc(derivative_result, Z_MAT, z_ref);
         end
+%         if strcmp(field_name,'CH4') 
+%             derivative_result = thresholding_and_smoothing(derivative_result,5,0.01);
+%         elseif strcmp(field_name,'N2')
+%             derivative_result = thresholding_and_smoothing(derivative_result,3,0.001);
+%         end
         % Store results
         results.(field_name) = struct();
         results.(field_name).field_data = field_data.DF;
@@ -162,7 +184,8 @@ if ~isempty(successful_fields)
     for i = 1:length(successful_fields)
         field_name = successful_fields{i};
         f_name = successful_fields_fig{i};
-%         plot_field_results(results.(field_name), results.hrr, f_name, D, i, figures_dir,C_MAT,Z_MAT);
+        plot_field_results(results.(field_name), results.hrr, f_name, D, i, figures_dir,C_MAT,Z_MAT);
+        plot_surface_field_results(results.(field_name), results.hrr, f_name, D, i, figures_dir, C_MAT, Z_MAT)
     end
     
     % Create summary comparison plot
