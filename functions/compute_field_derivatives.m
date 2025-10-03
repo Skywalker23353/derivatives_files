@@ -38,19 +38,19 @@ function [fields_struct, successful_fields] = compute_field_derivatives(field_co
         try
             % Load field data
             loaded_data = load(field_path);
-            field = compute_dfdr(loaded_data.DF, C_MAT);
+            df_dc = compute_dfdr(loaded_data.DF, C_MAT);
 %             if strcmp(field_name,'Temperature')
-%                 field = field./T_ref;
+%                 df_dc = df_dc./T_ref;
 %             elseif strcmp(field_name,'density')
-%                 field = field./rho_ref;
+%                 df_dc = df_dc./rho_ref;
 %             end
-            field = apply_downstream_replacement(field,Z_MAT,z_ref);
+            df_dc = apply_downstream_replacement(df_dc,Z_MAT,z_ref);
             if strcmp(field_name,'CO2')
-                field = set_boundary_to_zero(field, 'Boundaries', {'right'});
+                df_dc = set_boundary_to_zero(df_dc, 'Boundaries', {'right'});
             end
             % Store field information in fields_struct
             fields_struct.(field_name).actual_data = loaded_data.DF;
-            fields_struct.(field_name).derivative_wrt_C = field;
+            fields_struct.(field_name).derivative_wrt_C = df_dc;
             fields_struct.(field_name).latex_label = latex_label;
             fields_struct.(field_name).plot_title = plot_title;
             fields_struct.(field_name).short_name = short_name;

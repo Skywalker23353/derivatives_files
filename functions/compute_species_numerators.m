@@ -30,7 +30,6 @@ function [species_struct, successful_species] = compute_species_numerators(speci
             fprintf('  Computing derivative d%s/dc...\n', species_name);
             dspecies_dc = compute_dfdr(species_data.DF, C_MAT);
             dspecies_dc = set_boundary_to_zero(dspecies_dc, 'BoundaryWidth', 1, 'Boundaries', {'left','right'});
-            dspecies_dc = dspecies_dc./omega_dot_k_scaling;
             dspecies_dc = apply_downstream_replacement(dspecies_dc,Z_MAT,z_ref);
 
             % Initialize species_struct with numerator information
